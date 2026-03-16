@@ -1,9 +1,3 @@
--- -- -- -- -- -- -- -- -- -- -- -- -- --
--- MI PRIMER PROJECTO DOMO DATA ANLYST --
--- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
-
-
 
 -- -- -- -- -- -- --
 -- DATA EXTRACCION --
