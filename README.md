@@ -1,8 +1,27 @@
+![HR Analytics](./picture/baneer%20vertical.png)
 # Proyecto SQL: Análisis de RR.HH. - Rotación y Desempeño de Empleados
 
 ## Resumen (Overview)
-
 _El personal de recursos humanos de **GreatPlaceToWork** desea mejorar el desempeño, aumentar la retención y mejorar la satisfacción laboral general. Sin embargo, no cuentan con una visión clara de los datos pertinentes de los empleados. Mi objetivo es utilizar **SQL** dentro de **SQL Server Management Studio**, analizando sus datos para proporcionar recomendaciones al departamento de RR.HH. que faciliten mejoras exitosas._
+
+## 📩 Si quieres aprender SQL Conéctate conmigo
+<p align="center">
+  <a href="https://www.linkedin.com/in/jhon-velasque/">
+    <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=flat-square&logo=linkedin&logoColor=white" />
+  </a>
+  <a href="https://www.youtube.com/@HOLAMeDicenJHON">
+    <img src="https://img.shields.io/badge/YouTube-FF0000?style=flat-square&logo=youtube&logoColor=white" />
+  </a>
+  <a href="https://www.instagram.com/hola_me_dicen_jhon/">
+    <img src="https://img.shields.io/badge/Instagram-E4405F?style=flat-square&logo=instagram&logoColor=white" />
+  </a>
+  <a href="https://www.tiktok.com/@medicenjhon0?is_from_webapp=1&sender_device=pc">
+    <img src="https://img.shields.io/badge/TikTok-000000?style=flat-square&logo=tiktok&logoColor=white" />
+  </a>
+  <a href="https://wa.link/kzegye">
+    <img src="https://img.shields.io/badge/WhatsApp-25D366?style=flat-square&logo=whatsapp&logoColor=white" />
+  </a>
+</p>
 
 ## Estructura del Proyecto
 
@@ -76,9 +95,6 @@ HAVING COUNT(*) > 1;
 ```
 
 
-![image](https://github.com/user-attachments/assets/8bfa8a5e-c4f8-4ddf-9cbd-2deed717ae60)
-
-
 ## Análisis Exploratorio de Datos (EDA) e Insights
 
 ### Pregunta #1: ¿Cuál es la antigüedad promedio de los empleados en cada departamento?
@@ -89,13 +105,13 @@ Encontré la antigüedad promedio de cada departamento utilizando las funciones 
 -- Antigüedad promedio por departamento --
 
 SELECT Department,
-    ROUND(AVG(YearsAtCompany), 2) AS AvgTenure_Years
+	ROUND(AVG(cast(YearsAtCompany as float)), 2) AS AvgTenure_Years
 FROM Employee
 GROUP BY Department
-ORDER BY AvgTenure_Years;
+ORDER BY AvgTenure_Years DESC;
 ```
 
-![image](https://github.com/user-attachments/assets/58629302-062f-4eae-97e0-7bdd64709dab)
+![image](./picture/P1.png)
 
 _Antigüedad promedio (en años) por departamento_
 
@@ -122,7 +138,7 @@ GROUP BY Department
 ORDER BY ActiveEmployees DESC;
 ```
 
-![image](https://github.com/user-attachments/assets/8d081323-7275-412e-8688-bb0069320b2f)
+![image](./picture/P2.png)
 
 _Empleados activos por departamento y porcentaje del total_
 
@@ -137,23 +153,29 @@ El departamento de Tecnología podría necesitar ser examinado para verificar si
 A continuación, utilicé las funciones CASE y JOIN para encontrar la calificación promedio de satisfacción laboral en tres categorías: empleados con menos de tres años, aquellos entre tres y cinco años, y aquellos con más de cinco años.
 
 ```sql
--- Average job satisfaction by tenure category --
+-- Promedio de satisfacción laboral por categoría de antigüedad --
 
+WITH Employee_segmentado AS (
+    SELECT 
+        CASE 
+            WHEN YearsAtCompany < 3 THEN '< 3 years'
+            WHEN YearsAtCompany BETWEEN 3 AND 5 THEN '3-5 years'
+            ELSE '> 5 years' 
+        END AS TenureCategory
+        ,*
+    FROM Employee
+)
 SELECT 
-    CASE 
-	WHEN e.YearsAtCompany < 3 THEN '< 3 years'
-        WHEN e.YearsAtCompany BETWEEN 3 AND 5 THEN '3-5 years'
-        ELSE '> 5 years' 
-    END AS TenureCategory,
-    ROUND(AVG(p.JobSatisfaction), 2) AS AvgJobSatisfaction
-FROM Employee e
+   TenureCategory,
+    ROUND(AVG(p.JobSatisfaction), 3) AS AvgJobSatisfaction
+FROM Employee_segmentado e
 JOIN PerformanceRating p ON e.EmployeeID = p.EmployeeID
 GROUP BY TenureCategory
 ORDER BY AvgJobSatisfaction DESC;
 
 ```
 
-![image](https://github.com/user-attachments/assets/23bfb5f3-11a8-4518-b518-b6cfa105db4e)
+![image](./picture/P3.png)
 
 _Satisfacción laboral promedio por categoría de antigüedad_
 
@@ -175,7 +197,7 @@ GROUP BY OverTime
 ORDER BY OverTime DESC;
 ```
 
-![image](https://github.com/user-attachments/assets/bcad7c1f-635c-452a-b65c-4f4b22c78ec2)
+![image](./picture/P4.png)
 
 _Porcentaje de deserción por horas extras_
 
@@ -201,7 +223,7 @@ GROUP BY Department,
 	BusinessTravel;
 ```
 
-![image](https://github.com/user-attachments/assets/3a4571f3-447e-47b6-8c0d-e54b5e2ce6c1)
+![image](./picture/P5.png)
 
 _Calificación promedio del gerente, clasificada por departamento, separada por tipo de viaje_
 
@@ -216,7 +238,7 @@ GROUP BY Department
 ORDER BY AvgManagerRating DESC;
 ```
 
-![image](https://github.com/user-attachments/assets/dead48f4-430e-4ad7-8217-3eb8b3cf4730)
+![image](./picture/P5_2.png)
 
 _Calificación promedio del gerente por departamento_
 
@@ -229,7 +251,7 @@ GROUP BY BusinessTravel
 ORDER BY AvgManagerRating DESC;
 ```
 
-![image](https://github.com/user-attachments/assets/ebe7522f-7f31-41ec-ad48-a2f36e773b5f)
+![image](./picture/P5_3.png)
 
 _Calificación promedio del gerente por tipo de viaje_
 
@@ -253,17 +275,21 @@ GROUP BY TrainingOpportunitiesTaken
 ORDER BY TrainingOpportunitiesTaken DESC;
 ```
 
-![image](https://github.com/user-attachments/assets/a46bc708-264c-44ac-abe7-37aebbee98ad)
+![image](./picture/P6.png)
 
 _Calificación promedio de satisfacción laboral por oportunidades de capacitación tomadas_
 
-Parece haber una ligera correlación positiva entre la cantidad de oportunidades de capacitación que toman los empleados y su satisfacción laboral. Los empleados que tomaron tres oportunidades de capacitación mostraron una calificación de satisfacción promedio de 3.48, aquellos que tomaron dos y una, ambos en 3.42, mientras que los empleados que no tomaron ninguna tuvieron un promedio de 3.44.
+Parece haber una ligera correlación positiva entre la cantidad de oportunidades de capacitación que toman los empleados y su satisfacción laboral.
+
+ Los empleados que tomaron tres oportunidades de capacitación mostraron una calificación de satisfacción promedio de 3.48, aquellos que tomaron dos y una, ambos en 3.42, mientras que los empleados que no tomaron ninguna tuvieron un promedio de 3.44.
 
 La empresa debe asegurarse de brindar un acceso amplio a los programas de capacitación y alentar a los empleados a participar. Cada equipo podría discutir si la capacitación debe integrarse en las evaluaciones de desempeño.
 
 ### Pregunta #7: Identificar a los tres mejores empleados según la calificación de su gerente en cada departamento.
 
-Al intentar escribir esta consulta, descubrí que había más de tres empleados en cada departamento que tenían un cinco en la calificación del gerente. Decidí ampliar los criterios: los empleados no solo debían tener una calificación de gerente de cinco, sino que también debían haber tomado tres oportunidades de capacitación. Luego, dado que había un poco menos de resultados, incluí una columna de número de fila que seleccionaría aleatoriamente solo a tres empleados que cumplieran con los criterios. Los números de fila se aleatorizarían cada vez que se ejecutara la consulta. Usando una función WITH, pude encontrar un "top tres" aleatorio de empleados destacados en cualquier momento.
+Al intentar escribir esta consulta, descubrí que había más de tres empleados en cada departamento que tenían un cinco en la calificación del gerente. Decidí ampliar los criterios: los empleados no solo debían tener una calificación de gerente de cinco, sino que también debían haber tomado tres oportunidades de capacitación. 
+
+Luego, dado que había un poco menos de resultados, incluí una columna de número de fila que seleccionaría aleatoriamente solo a tres empleados que cumplieran con los criterios. Los números de fila se aleatorizarían cada vez que se ejecutara la consulta. Usando una función WITH, pude encontrar un "top tres" aleatorio de empleados destacados en cualquier momento.
 
 ```sql
 -- Top tres empleados aleatorios por departamento, calificación de gerente y capacitación tomada --
@@ -290,7 +316,7 @@ FROM RandomTop3Performers
 WHERE RowNum <= 3;
 ```
 
-![image](https://github.com/user-attachments/assets/20ad3efc-d912-41be-b3b1-0137c610c1fb)
+![image](./picture/P7.png)
 
 _Random top three performers by department_
 
@@ -301,41 +327,43 @@ Dado que cada departamento puede identificar qué empleados se están desempeña
 Primero, necesitaba saber cuál era la distancia más lejana que recorría un empleado desde su hogar.
 
 ```sql
-SELECT MAX(`DistanceFromHome (MI)`) AS LongestDistance
+SELECT MAX([DistanceFromHome (KM)]) AS LongestDistance
 FROM Employee;
 ```
 
 _Desplazamiento más largo_
 
-Ahora que conocía el trayecto más largo, podía categorizar todas las distancias, decidiendo finalmente dividirlas en las siguientes: < 5 millas, 5-20 millas y 20+ millas. Usando un par de sentencias CASE, creé categorías de distancia, uní la calificación de satisfacción laboral promedio correspondiente y ordené las categorías de forma personalizada.
+Ahora que conocía el trayecto más largo, podía categorizar todas las distancias, decidiendo finalmente dividirlas en las siguientes: < 5 KM, 5-20 KM y 20+ KM. Usando un par de sentencias CASE, creé categorías de distancia, uní la calificación de satisfacción laboral promedio correspondiente y ordené las categorías de forma personalizada.
 
 ```sql
 -- Conteo de empleados y satisfacción laboral promedio por categoría de distancia --
 
+WITH Employee_segmentado AS (
+    SELECT 
+        CASE 
+            WHEN [DistanceFromHome (KM)] BETWEEN 1 AND 9 THEN '< 10 KM'
+            WHEN [DistanceFromHome (KM)] BETWEEN 10 AND 30 THEN '10-30 KM'
+            ELSE '30K +' 
+        END AS DistanceCategory
+        ,*
+    FROM Employee
+)
 SELECT
-    CASE
-	WHEN e.`DistanceFromHome (MI)` BETWEEN 1 AND 4 THEN '< 5 mi.'
-        WHEN e.`DistanceFromHome (MI)` BETWEEN 5 AND 19 THEN '5-20 mi.'
-        ELSE '20+ mi.'
-    END AS DistanceCategory,
+	DistanceCategory,
     COUNT(DISTINCT e.EmployeeID) AS EmployeeCount,
-    ROUND(AVG(p.JobSatisfaction), 2) AS AvgJobSatisfaction
-FROM Employee e
+    ROUND(AVG(CAST(p.JobSatisfaction AS FLOAT)), 2) AS AvgJobSatisfaction
+FROM Employee_segmentado e
 JOIN PerformanceRating p ON e.EmployeeID = p.EmployeeID
 GROUP BY DistanceCategory
-ORDER BY
-    CASE
-	WHEN DistanceCategory = '< 5 mi.' THEN 1
-        WHEN DistanceCategory = '5-20 mi.' THEN 2
-        ELSE 3
-    END;
+ORDER BY DistanceCategory;
+
 ```
 
-![image](https://github.com/user-attachments/assets/a5a90821-f08d-4996-8df0-6d234f1fcb3a)
+![image](./picture/P8.png)
 
 _Conteo de empleados y satisfacción laboral promedio por categoría de distancia_
 
-La satisfacción laboral promedio más alta perteneció al grupo de 5-20 millas con 3.44, seguido de cerca por el grupo de < 5 millas con 3.43 y finalmente el grupo de 20+ millas con 3.42.
+La satisfacción laboral promedio más alta perteneció al grupo de 10-30 KM con 3.44, seguido de cerca por el grupo de < 10 KM con 3.43 y finalmente el grupo de 30+ KM con 3.42.
 
 La empresa puede explorar opciones de trabajo más flexibles para los empleados con trayectos más largos para ver si aumenta la satisfacción. El trabajo híbrido o totalmente remoto podría ayudar a los empleados que viven más lejos, mientras que algunos beneficios y descuentos locales podrían hacer que vivir más cerca sea más atractivo.
 
@@ -352,7 +380,7 @@ GROUP BY YearsWithCurrManager
 ORDER BY YearsWithCurrManager;
 ```
 
-![image](https://github.com/user-attachments/assets/f3a8b1ca-8d95-4035-b3a2-2e912b80a934)
+![image](./picture/P9.png)
 
 _Promedio de años desde la última promoción por años con el gerente actual_
 
@@ -381,7 +409,7 @@ GROUP BY e.Department
 ORDER BY LowSatisfactionAttritionRate DESC;
 ```
 
-![image](https://github.com/user-attachments/assets/0715d96a-a232-4037-851f-f089e0501a94)
+![image](./picture/P10.png)
 
 _Tasa de deserción por baja satisfacción por departamento_
 
@@ -391,20 +419,10 @@ Ventas podría replantear sus entrevistas de salida para comprender mejor esta b
 
 ### Conclusion
 
-Este análisis proporcionó información importante sobre las áreas donde GreatPlaceToWork puede mejorar la experiencia del empleado.
+- Este análisis proporcionó información importante sobre las áreas donde GreatPlaceToWork puede mejorar la experiencia del empleado.
 
-Los hallazgos permitieron identificar puntos clave para aumentar la retención y optimizar el desempeño general.
+- Uno de los descubrimientos principales fue la alta tasa de rotación entre los trabajadores que realizan horas extras.
 
-Uno de los descubrimientos principales fue la alta tasa de rotación entre los trabajadores que realizan horas extras.
+- Se detectaron niveles de satisfacción variables dependiendo de la distancia que el empleado recorre desde su hogar al trabajo.
 
-También se observó una ligera disminución en la satisfacción entre los empleados con mucha antigüedad en la empresa.
-
-Se detectaron niveles de satisfacción variables dependiendo de la distancia que el empleado recorre desde su hogar al trabajo.
-
-Para abordar estos problemas, la empresa debe tomar la iniciativa y enfocarse en mejorar los esfuerzos de retención.
-
-Es fundamental fortalecer el apoyo que brindan los gerentes a sus equipos.
-
-Resulta vital continuar desarrollando y expandiendo los programas de capacitación internos.
-
-Al capitalizar este análisis profundo para mejorar las prácticas de recursos humanos, la fuerza laboral de GreatPlaceToWork será más satisfecha y comprometida.
+- Para abordar estos problemas, la empresa debe tomar la iniciativa y enfocarse en mejorar los esfuerzos de retención.Es fundamental fortalecer el apoyo que brindan los gerentes a sus equipos.Resulta vital continuar desarrollando y expandiendo los programas de capacitación internos.

@@ -104,59 +104,33 @@ FROM PerformanceRating
 GROUP BY PerformanceID
 HAVING COUNT(*) > 1;
 
-----------------------
--- Duplicate Values --
-----------------------
+-----------------------------------
+-- Verificar valores duplicados  --
+-----------------------------------
 
 
 
--- Check for duplicate values in PerformanceRating table --
+-- Verificar valores duplicados en la tabla Employe --
+
+SELECT EmployeeID, COUNT(*)
+FROM Employee
+GROUP BY EmployeeID
+HAVING COUNT(*) > 1;
+
+-- Verificar valores duplicados en la tabla PerformanceRating --
 
 SELECT PerformanceID, COUNT(*)
 FROM PerformanceRating
 GROUP BY PerformanceID
-HAVING COUNT(*) > 1;
 
--- Standardization --
-
--- Change DistanceFromHome (KM) measurement from kilometers (KM) to miles (MI) --
-
---UPDATE Employee
---SET `DistanceFromHome (KM)` = ROUND(`DistanceFromHome (KM)` * 0.621371, 0);
-
--- Change column name to DistanceFromHome(MI) --
-
---ALTER TABLE Employee CHANGE COLUMN `DistanceFromHome (KM)` `DistanceFromHome (MI)` INT;
-
--- Change ReviewDate to standard date format --
--- (due to Safe Updates being on in MySQL, I had to momentarily turn them off to perform this query) --
-
---SET SQL_SAFE_UPDATES = 0;
-	/*
-UPDATE PerformanceRating
-SET ReviewDate = CASE
-	WHEN LENGTH(ReviewDate) = 10 THEN DATE_FORMAT(STR_TO_DATE(ReviewDate, '%m/%d/%Y'), '%Y-%m-%d')
-	ELSE DATE_FORMAT(STR_TO_DATE(ReviewDate, '%m/%d/%Y'), '%Y-%m-%d')
-END
-WHERE ReviewDate IS NOT NULL;
-
-SET SQL_SAFE_UPDATES = 1;
-*/
--- Miscellaneous --
-
--- Check # of rows vs. # of employees in Employee table --
-
-SELECT COUNT(*) AS AllRows,
-	COUNT(DISTINCT EmployeeID) AS UniqueEmployees
-FROM employee;
 
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 -- EXPLORATORY DATA ANALYSIS AND INSIGHTS --
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
--- Question #1: What is the average tenure for employees within each department?
+--Pregunta #1: ¿Cuál es la antigüedad promedio de los empleados en cada departamento?
 
--- Average tenure by department --
+-- Antigüedad promedio por departamento  --
 
 SELECT Department,
 	ROUND(AVG(YearsAtCompany), 2) AS AvgTenure_Years
@@ -164,9 +138,8 @@ FROM Employee
 GROUP BY Department
 ORDER BY AvgTenure_Years DESC;
 
--- Question #2: How many employees in each department are still working at the company?
-
--- # of Active Employees and % of Total --
+-- Pregunta #2: ¿Cuántos empleados en cada departamento siguen trabajando en la empresa?
+-- Empleados Activos --
 
 SELECT Department,
 	COUNT(*) AS ActiveEmployees,
@@ -181,7 +154,7 @@ ORDER BY ActiveEmployees DESC;
 
 -- Question #3: How does job satisfaction for employees compare with different tenure levels?
 
--- Average job satisfaction by tenure category --
+-- Promedio de satisfacción laboral por categoría de antigüedad--
 WITH Employee_segmentado AS (
     SELECT 
         CASE 
@@ -194,31 +167,29 @@ WITH Employee_segmentado AS (
 )
 SELECT 
    TenureCategory,
-    ROUND(AVG(p.JobSatisfaction), 3) AS AvgJobSatisfaction
+    ROUND(AVG(CAST(p.JobSatisfaction AS FLOAT)), 2) AS AvgJobSatisfaction
 FROM Employee_segmentado e
 JOIN PerformanceRating p ON e.EmployeeID = p.EmployeeID
 GROUP BY TenureCategory
 ORDER BY AvgJobSatisfaction DESC;
 
--- Question #4: What percentage of employees who work overtime have left the company?
 
--- Overtime attrition percentage --
+-- Pregunta #4: Examinar cuántos empleados que trabajaron horas extras han dejado la empresa frente a los que no trabajaron horas extras. --
 
 SELECT OverTime, 
 	ROUND(COUNT(CASE
 					WHEN Attrition = 'Yes' THEN EmployeeID
-				END) * 100.0 / COUNT(EmployeeID), 0) AS OverTimeAttritionPercentage
+				END) * 100/ COUNT(EmployeeID),2) AS OverTimeAttritionPercentage
 FROM Employee
 GROUP BY OverTime
 ORDER BY OverTime DESC;
 
--- Question #5: Rank departments by average manager ratings, separated by business travel.
-
--- Average manager ratings by department and travel --
+-- Pregunta #5: Clasificar los departamentos por calificaciones promedio de los gerentes, separados por viajes de negocios.
+-- Calificaciones promedio de gerentes por departamento y viajes --
 
 SELECT e.Department,
     e.BusinessTravel,
-    ROUND(AVG(p.ManagerRating), 2) AS AvgManagerRating,
+    ROUND(AVG(CAST(p.ManagerRating AS FLOAT)), 2) AS AvgManagerRating,
     RANK() OVER (PARTITION BY e.BusinessTravel
 		ORDER BY AVG(p.ManagerRating) DESC) AS DepartmentRank
 FROM Employee e
@@ -226,38 +197,36 @@ JOIN PerformanceRating p ON e.EmployeeID = p.EmployeeID
 GROUP BY Department,
 	BusinessTravel;
 
--- Average ManagerRating by Department --
+-- promedio total de ManagerRating  por Departamento y  BusinessTravel. --
 
 SELECT e.Department,
-	ROUND(AVG(p.ManagerRating), 2) AS AvgManagerRating
+	ROUND(AVG(CAST(p.ManagerRating AS FLOAT)), 2) AS AvgManagerRating
 FROM Employee e
 JOIN PerformanceRating p ON e.EmployeeID = p.EmployeeID
 GROUP BY Department
 ORDER BY AvgManagerRating DESC;
 
--- Average manager rating by travel type --
+-- Calificación promedio del gerente por departamento --
 
 SELECT e.BusinessTravel,
-	ROUND(AVG(p.ManagerRating), 2) AS AvgManagerRating
+	ROUND(AVG(CAST(p.ManagerRating AS FLOAT)), 2) AS AvgManagerRating
 FROM Employee e
 JOIN PerformanceRating p ON e.EmployeeID = p.EmployeeID
 GROUP BY BusinessTravel
 ORDER BY AvgManagerRating DESC;
 
--- Question #6: Is there a positive correlation between the number of training opportunities an employee has taken and their job satisfaction?
+-- Pregunta #6: ¿Existe una correlación positiva entre el número de oportunidades de capacitación que ha tomado un empleado y su satisfacción laboral?
 
--- Average job satisfaction rating by training opportunities taken --
+-- Satisfacción laboral promedio por oportunidades de capacitación tomadas --
 
 SELECT TrainingOpportunitiesTaken,
-    ROUND(AVG(JobSatisfaction), 2) AS AvgJobSatisfaction
+    ROUND(AVG(CAST(JobSatisfaction AS FLOAT)), 2) AS AvgJobSatisfaction
 FROM PerformanceRating
 GROUP BY TrainingOpportunitiesTaken
 ORDER BY TrainingOpportunitiesTaken DESC;
 
--- Question #7: Identify the top three employees by their manager rating in each department.
-
--- Random top three employees by department, manager rating, and training opportunities taken --
-
+-- Pregunta #7: Identificar a los tres mejores empleados según la calificación de su gerente en cada departamento.
+--Top tres empleados aleatorios por departamento, calificación de gerente y capacitación tomad
 WITH RandomTop3Performers AS (
     SELECT 
         CONCAT(e.FirstName, ' ', e.LastName) AS FullName,
@@ -279,9 +248,9 @@ SELECT FullName,
 FROM RandomTop3Performers
 WHERE RowNum <= 3;
 
--- Question #8: Categorize employees based on their distance from work and show average job satisfaction in each category.
+-- Pregunta #8: Categorizar a los empleados según su distancia al trabajo y mostrar la satisfacción laboral promedio en cada categoría.
 
--- Longest distance from work --
+-- Distancia maxima a su centro de trabajo Max--
 
 SELECT MAX([DistanceFromHome (KM)]) AS LongestDistance
 FROM Employee;
@@ -290,9 +259,9 @@ FROM Employee;
 WITH Employee_segmentado AS (
     SELECT 
         CASE 
-            WHEN [DistanceFromHome (KM)] BETWEEN 1 AND 4 THEN '< 5 mi.'
-            WHEN [DistanceFromHome (KM)] BETWEEN 5 AND 19 THEN '5-20 mi.'
-            ELSE '20+ mi.' 
+            WHEN [DistanceFromHome (KM)] BETWEEN 1 AND 9 THEN '< 10 KM'
+            WHEN [DistanceFromHome (KM)] BETWEEN 10 AND 30 THEN '10-30 KM'
+            ELSE '30K +' 
         END AS DistanceCategory
         ,*
     FROM Employee
@@ -300,37 +269,38 @@ WITH Employee_segmentado AS (
 SELECT
 	DistanceCategory,
     COUNT(DISTINCT e.EmployeeID) AS EmployeeCount,
-    ROUND(AVG(p.JobSatisfaction), 2) AS AvgJobSatisfaction
+    ROUND(AVG(CAST(p.JobSatisfaction AS FLOAT)), 2) AS AvgJobSatisfaction
 FROM Employee_segmentado e
 JOIN PerformanceRating p ON e.EmployeeID = p.EmployeeID
 GROUP BY DistanceCategory
 ORDER BY DistanceCategory;
 
--- Question #9: Is there a relationship between the number of promotions and the years an employee has spent with their current manager?
-
--- Average years since last promotion by years with current manager --
-
+-- ### Pregunta #9: ¿Existe una relación entre el número de promociones y los años que un empleado ha pasado con su gerente actual?
+-- Promedio de años desde la última promoción por años con el gerente actual --
 SELECT YearsWithCurrManager, ROUND(AVG(YearsSinceLastPromotion), 0) AS AvgYearsSinceLastPromotion
 FROM Employee
 GROUP BY YearsWithCurrManager
 ORDER BY YearsWithCurrManager;
 
--- Question #10: For each department, identify the percentage of employees who have left the company and had a job satisfaction score below 3.
-
+-- Pregunta #10: Para cada departamento, identificar el porcentaje de empleados que han dejado la empresa y tenían una puntuación de satisfacción laboral inferior a 3.
 -- Percentage of former employees who had low job satisfaction rating --
 
-SELECT e.Department,
-	ROUND(COUNT(CASE
-					WHEN e.Attrition = 'Yes'
-						AND p.AvgJobSatisfaction < 3
-					THEN 1
-				END) * 100.0 / COUNT(*), 2) AS LowSatisfactionAttritionRate
-FROM Employee e
-JOIN (
-	SELECT EmployeeID,
-		AVG(JobSatisfaction) AS AvgJobSatisfaction
+WITH JobSatisfaction_Avg AS (
+    
+    SELECT 
+        EmployeeID,
+        AVG(JobSatisfaction * 1.0) AS AvgJobSatisfaction
     FROM PerformanceRating
     GROUP BY EmployeeID
-) p ON e.EmployeeID = p.EmployeeID
+)
+SELECT 
+    e.Department,
+    -- Aplicamos CAST al final para limpiar la visualización
+    CAST(
+        SUM(CASE WHEN e.Attrition = 'Yes' AND p.AvgJobSatisfaction < 3 THEN 1.0 ELSE 0 END) 
+        * 100.0 / COUNT(1) 
+    AS DECIMAL(10, 2)) AS LowSatisfactionAttritionRate
+FROM Employee e
+JOIN JobSatisfaction_Avg p ON e.EmployeeID = p.EmployeeID
 GROUP BY e.Department
 ORDER BY LowSatisfactionAttritionRate DESC;
